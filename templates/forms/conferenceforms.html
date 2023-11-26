@@ -40,10 +40,18 @@
                 <div class="card" style="width: 30rem; ">
                     <div class="FormContainer card-body">
                         <h1 style="text-align: center; padding-top: 10px">Conference Room Booking Form</h1>
-                        <form method="POST" action="submit" class="form-inline">
+                        <form method="POST" action="/forms/submit" class="form-inline">
                             <div class="elem-group form-group card-text">
                                 <label for="name">Name of Organization</label>
                                 <input type="text" class="form-control" id="name" name="org_name" placeholder="XCCA" pattern="[A-Za-z\s]{3,20}" required>
+                            </div>
+                            <div class="elem-group form-group card-text">
+                                <label for="room-selection">Company Type</label>
+                                <select class="form-control" id="org-type-selection" name="org_type" required>
+                                    <option value="individual">Individual</option>
+                                    <option value="corporate">Corporate</option>
+                                    <option value="others">Others</option>
+                                </select>
                             </div>
                             <div class="elem-group form-group card-text">    
                                 <label for="email">E-mail</label>
@@ -80,10 +88,10 @@
                             </div>
                             <div class="elem-group form-group card-text">
                                 <label for="room-selection">Mode of Payment</label>
-                                <select class="form-control" id="paymentMethod" name="room_number" required>
-                                    <option value="CF 1">Cash</option>
-                                    <option value="CF 2">Credit</option>
-                                    <option value="CF 3">Online</option>
+                                <select class="form-control" id="paymentMethod" name="paymentMethod" required>
+                                    <option value="cash">Cash</option>
+                                    <option value="credit">Credit</option>
+                                    <option value="onlinepay">Online</option>
                                 </select>
                             </div>
                             <hr>
@@ -108,4 +116,5 @@
         </div>
     </div>
 </body>
+
 </html>
