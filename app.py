@@ -1,6 +1,17 @@
 from flask import Flask, redirect, url_for, render_template, request
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+import os
+from dotenv import load_dotenv
+import uuid
+from datetime import datetime
+import sweetify
 
+load_dotenv()
 app = Flask(__name__)
+
+client = MongoClient(os.getenv('MONGODB_SRV'))
+db = client['booking']
 
 
 @app.route("/")
@@ -91,12 +102,13 @@ class Booking:
         }
 
 class Customer:
-    def __init__(self, email, contact, address, org_type, company):
+    def __init__(self, email, contact, org_type, company, payment_method):
         self.cid = str(uuid.uuid4())
         self.email = email
         self.contact = contact
         self.org_type = org_type
         self.company = company
+        self.payment_method = payment_method
 
     def to_dict(self):
         return {
@@ -104,33 +116,37 @@ class Customer:
             'cid': self.cid,
             'email': self.email,
             'contact': self.contact,
-            'address': self.address,
             'org_type': self.org_type,
-            'company': self.company
+            'company': self.company,
+            'payment_method': self.payment_method
         }
 
-@app.route("/forms", methods=['POST'])
+@app.route("/forms/submit", methods=['POST'])
 def reservation_post():
     try:
         reserv_collection = db['reservation']
 
-        startdate = request.form.get('start-date')
-        enddate = request.form.get('end-date')
-
-        existing_booking = reserv_collection.find_one({
-            'startdate': {'$lte': enddate},
-            'enddate': {'$gte': startdate}
-        })
-
-        if existing_booking:
-            return "Error: There is already a booking in the specified date range."
-
+        startdate = request.form.get('start_date')
+        enddate = request.form.get('end_date')
         org_name = request.form.get('org_name')
-        starttime = request.form.get('start-time')
-        endtime = request.form.get('end-time')
+        starttime = request.form.get('start_time')
+        endtime = request.form.get('end_time')
         venue = request.form.get('room_number')
         purpose = request.form.get('purpose')
         description = request.form.get('description')
+
+        # Check if there is an existing reservation at the specified time
+        existing_reservation = reserv_collection.find_one({
+            'startdate': startdate,
+            'enddate': enddate,
+            'starttime': starttime,
+            'endtime': endtime,
+            'venue': venue
+        })
+
+        if existing_reservation:
+            sweetify.error("Time and date conflict. Please choose a different time slot.", timer=3000)
+            return redirect(url_for('booking'))
 
         booking = Booking(org_name, startdate, enddate, starttime, endtime, venue, purpose, description)
         reserv_collection.insert_one(booking.to_dict())
@@ -139,16 +155,18 @@ def reservation_post():
         
         email = request.form.get('org_email')
         contact = request.form.get('org_phone')
-        address = request.form.get('org_address')
         org_type = request.form.get('org_type') 
-        company = request.form.get('org_company')
+        company = request.form.get('org_name')
+        payment_method = request.form.get('payment_method')
 
-        customer = Customer(email, contact, address, org_type, company)
+        customer = Customer(email, contact, org_type, company, payment_method)
         cust_collection.insert_one(customer.to_dict())
 
+        sweetify.success("Reservation submitted successfully!", timer=3000)
         return redirect(url_for('booking'))
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        sweetify.error(str(e), timer=3000)
+        return redirect(url_for('booking'))
 
 if __name__ == "__main__":
     app.run(debug=True)
