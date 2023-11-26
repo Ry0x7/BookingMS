@@ -23,7 +23,7 @@
                         <a href="{{url_for('booking')}}" class="nav-link">Book Now</a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{url_for('booking')}}" class="nav-link">About Us</a>
+                        <a href="{{url_for('about')}}" class="nav-link">About Us</a>
                     </li>   
                 </ul>
             </div>
@@ -72,6 +72,14 @@
                                     <option value="CF 1">Conference Room 1</option>
                                     <option value="CF 2">Conference Room 2</option>
                                     <option value="CF 3">Conference Room 3</option>
+                                </select>
+                            </div>
+                            <div class="elem-group form-group card-text">
+                                <label for="room-selection">Mode of Payment</label>
+                                <select class="form-control" id="paymentMethod" name="room_number" required>
+                                    <option value="CF 1">Cash</option>
+                                    <option value="CF 2">Credit</option>
+                                    <option value="CF 3">Online</option>
                                 </select>
                             </div>
                             <hr>
