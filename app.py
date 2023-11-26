@@ -1,11 +1,10 @@
-from flask import Flask, redirect, url_for, render_template, request
+from flask import Flask, redirect, url_for, render_template, request, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import os
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
-import sweetify
 
 load_dotenv()
 app = Flask(__name__)
@@ -46,7 +45,7 @@ def report():
         'Little Theater',
         'Audio Visual Room',
     ]
- 
+
     weekdata = [5, 4, 7]
     
     mlabels = [
@@ -54,9 +53,9 @@ def report():
         'Little Theater',
         'Audio Visual Room',
     ]
- 
+
     mdata = [30, 20, 45]
- 
+
     return render_template(
         template_name_or_list='report.html',
         wdata=weekdata,
@@ -135,17 +134,7 @@ def reservation_post():
         venue = request.form.get('room_number')
         purpose = request.form.get('purpose')
         description = request.form.get('description')
-        # Check if there is an existing reservation at the specified time
-        existing_reservation = reserv_collection.find_one({
-            'startdate': startdate,
-            'enddate': enddate,
-            'starttime': starttime,
-            'endtime': endtime,
-            'venue': venue
-        })
-        if existing_reservation:
-            sweetify.error("Time and date conflict. Please choose a different time slot.", timer=3000)
-            return redirect(url_for('booking'))
+
         booking = Booking(org_name, startdate, enddate, starttime, endtime, venue, purpose, description)
         
         email = request.form.get('org_email')
@@ -159,11 +148,34 @@ def reservation_post():
         cust_collection.insert_one(customer.to_dict())
         reserv_collection.insert_one(booking.to_dict())
 
-        sweetify.success("Reservation submitted successfully!", timer=3000)
-        return redirect(url_for('booking'))
+        return render_template('booking.html', success="Reservation successful!")
     except Exception as e:
-        sweetify.error(str(e), timer=3000)
-        return redirect(url_for('booking'))
+        return render_template('booking.html', error=str(e))
+    
+@app.route("/check-time-conflicts", methods=['GET'])
+def check_time_conflicts():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    start_time = request.args.get('start_time')
+    end_time = request.args.get('end_time')
+
+    conflicts = False
+
+    reserv_collection = db['reservation']
+    existing_reservation = reserv_collection.find_one({
+        'startdate': start_date,
+        'enddate': end_date,
+        'starttime': start_time,
+        'endtime': end_time
+    })
+    if existing_reservation:
+        conflicts = True
+
+    response = {
+        'conflicts': conflicts
+    }
+
+    return jsonify(response)
 
 if __name__ == "__main__":
     app.run(debug=True)
