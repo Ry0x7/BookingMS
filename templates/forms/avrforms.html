@@ -114,5 +114,57 @@
             </div>
         </div>
     </div>
-</body>
+
+        <!-- Error Modal -->
+        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>There are time conflicts. Please choose a different time slot.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            // Check for time conflicts
+            function checkTimeConflicts(event) {
+                event.preventDefault();
+
+                var startDate = document.getElementById("start-date").value;
+                var endDate = document.getElementById("end-date").value;
+                var startTime = document.getElementById("start-time").value;
+                var endTime = document.getElementById("end-time").value;
+
+                // Make an AJAX request to the server to check for conflicts in the database
+                // Replace the URL with the appropriate endpoint in your Django application
+                var url = "/check-time-conflicts?start_date=" + startDate + "&end_date=" + endDate + "&start_time=" + startTime + "&end_time=" + endTime;
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", url, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.conflicts) {
+                            // Display the error modal if there are conflicts
+                            var errorModal = new bootstrap.Modal(document.getElementById("errorModal"));
+                            errorModal.show();
+                        } else {
+                            // Submit the form if there are no conflicts
+                            document.getElementById("booking-form").submit();
+                        }
+                    }
+                };
+                xhr.send();
+            }
+
+            // Attach the checkTimeConflicts function to the form submission event
+            document.getElementById("booking-form").addEventListener("submit", checkTimeConflicts);
+        </script>
+    </body>
 </html>
