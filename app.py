@@ -125,6 +125,7 @@ class Customer:
 def reservation_post():
     try:
         reserv_collection = db['reservation']
+        cust_collection = db['customer']
 
         startdate = request.form.get('start_date')
         enddate = request.form.get('end_date')
@@ -134,7 +135,6 @@ def reservation_post():
         venue = request.form.get('room_number')
         purpose = request.form.get('purpose')
         description = request.form.get('description')
-
         # Check if there is an existing reservation at the specified time
         existing_reservation = reserv_collection.find_one({
             'startdate': startdate,
@@ -143,15 +143,10 @@ def reservation_post():
             'endtime': endtime,
             'venue': venue
         })
-
         if existing_reservation:
             sweetify.error("Time and date conflict. Please choose a different time slot.", timer=3000)
             return redirect(url_for('booking'))
-
         booking = Booking(org_name, startdate, enddate, starttime, endtime, venue, purpose, description)
-        reserv_collection.insert_one(booking.to_dict())
-
-        cust_collection = db['customer']
         
         email = request.form.get('org_email')
         contact = request.form.get('org_phone')
@@ -160,7 +155,9 @@ def reservation_post():
         payment_method = request.form.get('payment_method')
 
         customer = Customer(email, contact, org_type, company, payment_method)
+        
         cust_collection.insert_one(customer.to_dict())
+        reserv_collection.insert_one(booking.to_dict())
 
         sweetify.success("Reservation submitted successfully!", timer=3000)
         return redirect(url_for('booking'))
