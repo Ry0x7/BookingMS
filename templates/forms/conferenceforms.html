@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>Conference Room Booking Form</title>
+</head>
+<body>
+    <div class="container">
+        <div class="FormContainer">
+            <h1 style="text-align: center; padding-top: 50px">Conference Room Booking Form</h1>
+            <form method="POST" action="submit">
+                <div class="elem-group">
+                    <label for="name">Name of Organization</label>
+                    <input type="text" id="name" name="visitor_name" placeholder="XCCA" pattern="[A-Za-z\s]{3,20}" required>
+                </div>
+                <div class="elem-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="visitor_email" placeholder="richard@xu.edu.ph" required>
+                </div>
+                <div class="elem-group">
+                    <label for="phone">Your Phone</label>
+                    <input type="tel" id="phone" name="visitor_phone" placeholder="09512225773" pattern="(\d{3})-?\s?(\d{3})-?\s?(\d{4})" required>
+                </div>
+                <hr>
+                <div class="elem-group inlined">
+                    <label for="start-date">Start Date</label>
+                    <input type="date" id="start-date" name="start_date" required>
+                </div>
+                <div class="elem-group inlined">
+                    <label for="end-date">End Date</label>
+                    <input type="date" id="end-date" name="end_date" required>
+                </div>
+                <div class="elem-group inlined">
+                    <label for="start-time">Start Time</label>
+                    <input type="time" id="start-time" name="start_time" required>
+                </div>
+                <div class="elem-group inlined">
+                    <label for="end-time">End Time</label>
+                    <input type="time" id="end-time" name="end_time" required>
+                </div>
+                <div class="elem-group">
+                    <label for="room-selection">Select Room</label>
+                    <select id="room-selection" name="room_number" required>
+                        <option value="CF 1" {% if room_available("CF1") %}class="available"{% else %}class="unavailable"{% endif %}>Conference Room 1</option>
+                        <option value="CF 2" {% if room_available("CF2") %}class="available"{% else %}class="unavailable"{% endif %}>Conference Room 2</option>
+                        <option value="CF 3" {% if room_available("CF3") %}class="available"{% else %}class="unavailable"{% endif %}>Conference Room 3</option>
+                    </select>
+                </div>
+                <hr>
+                <div class="elem-group">
+                    <label for="purpose">Purpose</label>
+                    <input type="text" id="purpose" name="purpose" placeholder="Meeting, Workshop, etc." required>
+                </div>
+                <div class="elem-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" placeholder="Provide a brief description of the event." required></textarea>
+                </div>
+                <button type="submit">Book The Rooms</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
