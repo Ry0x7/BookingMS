@@ -75,46 +75,6 @@ def report():
         mdata=mdata,
         mlabels=mlabels
     )
-    
-@app.route('/signup', methods=['GET', 'POST'])    
-def signup():
-    error = None
-    users_collection = db['users']
-
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-
-        existing_user = users_collection.find_one({'email': email})
-        if existing_user is not None:
-            error = 'Email already exists. Please try again.'
-        else:
-            new_user = {'email': email, 'password': password}
-            users_collection.insert_one(new_user)
-            return render_template('loggedin.html')
-
-    return render_template('signup.html', error=error)
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    users_collection = db['users']
-
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-
-        user = Users(email, password)
-        
-        user = users_collection.find_one({'email': email})
-        if user is None:
-            error = 'Invalid email. Please try again.'
-        elif user['password'] != password:
-            error = 'Invalid password. Please try again.'
-        else:
-            return render_template('loggedin.html')
-
-    return render_template('login.html', error=error)
 
 class Users:
     def __init__(self, email, password):
@@ -130,7 +90,7 @@ class Users:
         }    
 
 class Booking:
-    def __init__(self, org_name, startdate, enddate, starttime, endtime, venue, purpose, description):
+    def __init__(self, org_name, startdate, enddate, starttime, endtime, venue, purpose, description, status):
         self.booking_id = str(uuid.uuid4())
         self.org_name = org_name
         self.startdate = startdate
@@ -140,6 +100,7 @@ class Booking:
         self.venue = venue
         self.purpose = purpose
         self.description = description
+        self.status = status
 
     def to_dict(self):
         return {
@@ -152,7 +113,8 @@ class Booking:
             'endtime': self.endtime,
             'venue': self.venue,
             'purpose': self.purpose,
-            'description': self.description
+            'description': self.description,
+            'status': self.status
         }
 
 class Customer:
@@ -189,8 +151,9 @@ def reservation_post():
         venue = request.form.get('room_number')
         purpose = request.form.get('purpose')
         description = request.form.get('description')
+        status = "Pending"
 
-        booking = Booking(org_name, startdate, enddate, starttime, endtime, venue, purpose, description)
+        booking = Booking(org_name, startdate, enddate, starttime, endtime, venue, purpose, description, status)
         
         email = request.form.get('org_email')
         contact = request.form.get('org_phone')
@@ -236,9 +199,117 @@ collection = db['reservation']
 
 data = collection.find()
 
-@app.route('/booked')
-def booked():
-    return render_template('booked.html', data=data)
+@app.route('/signup', methods=['GET', 'POST'])    
+def signup():
+    error = None
+    users_collection = db['users']
 
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        existing_user = users_collection.find_one({'email': email})
+        if existing_user is not None:
+            error = 'Email already exists. Please try again.'
+        else:
+            new_user = {'email': email, 'password': password}
+            users_collection.insert_one(new_user)
+            return render_template('loggedin.html')
+
+    return render_template('signup.html', error=error)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    users_collection = db['users']
+
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        users_collection = users_collection.find_one({'email': email})
+        if users_collection is None:
+            error = 'Invalid email. Please try again.'
+        elif users_collection['password'] != password:
+            error = 'Invalid password. Please try again.'
+        else:
+            return render_template('loggedin.html')
+
+    return render_template('login.html', error=error)
+
+def combine_collections():
+    cust_collection = db['customer']
+    reserv_collection = db['reservation']
+    
+    booked_data = []
+    for customer in cust_collection.find():
+        reservations = reserv_collection.find({'org_name': customer['company']})
+        for reservation in reservations:
+            specific_data = {
+                'booking_id': reservation.get('booking_id'),
+                'org_name': reservation.get('org_name'),
+                'startdate': reservation.get('startdate'),
+                'enddate': reservation.get('enddate'),
+                'starttime': reservation.get('starttime'),
+                'endtime': reservation.get('endtime'),
+                'venue': reservation.get('venue'),
+                'purpose': reservation.get('purpose'),
+                'description': reservation.get('description'),
+                'status': reservation.get('status')
+            }
+            booked_data.append(specific_data)
+
+    return booked_data
+
+@app.route('/booked', methods=['GET'])
+def booked():
+    try:
+        if request.method == 'GET':
+            data = combine_collections()
+        return render_template('booked.html', data=data)
+    except Exception as e:
+        return str(e)
+    
+@app.route('/updateBooking', methods=['POST'])
+def update_booking():
+    try:
+        reserv_collection = db['reservation']
+        data = request.get_json()
+        booking_id = data['booking_id']
+        org_name = data['org_name']
+        startdate = data['startdate']
+        enddate = data['enddate']
+        starttime = data['starttime']
+        endtime = data['endtime']
+        venue = data['venue']
+        purpose = data['purpose']
+        description = data['description']
+        status = data['status']
+        reserv_collection.update_one({'booking_id': booking_id}, {'$set': {
+            'org_name': org_name,
+            'startdate': startdate,
+            'enddate': enddate,
+            'starttime': starttime,
+            'endtime': endtime,
+            'venue': venue,
+            'purpose': purpose,
+            'description': description,
+            'status': status
+        }})
+        return jsonify({'message': 'Booking updated successfully'}), 200
+    except Exception as e:
+        return str(e), 400
+    
+@app.route('/deleteBooking/<booking_id>', methods=['DELETE'])
+def delete_booking(booking_id):
+    try:
+        reserv_collection = db['reservation']
+        result = reserv_collection.delete_one({'booking_id': booking_id})
+        if result.deleted_count == 0:
+            return jsonify({'message': 'No booking found with that ID'}), 404
+        else:
+            return jsonify({'message': 'Booking deleted successfully'}), 200
+    except Exception as e:
+        return str(e), 400
 if __name__ == "__main__":
     app.run(debug=True)
