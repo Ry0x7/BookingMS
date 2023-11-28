@@ -5,12 +5,16 @@ import os
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 load_dotenv()
 app = Flask(__name__)
 
 client = MongoClient(os.getenv('MONGODB_SRV'))
 db = client['booking']
+records = db.users
+
 
 
 @app.route("/")
@@ -195,47 +199,36 @@ def check_time_conflicts():
 
     return jsonify(response)
 
-collection = db['reservation']
-
-data = collection.find()
-
-@app.route('/signup', methods=['GET', 'POST'])    
+@app.route('/signup', methods=['POST', 'GET'])
 def signup():
-    error = None
-    users_collection = db['users']
-
+    message = ''
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-
-        existing_user = users_collection.find_one({'email': email})
-        if existing_user is not None:
-            error = 'Email already exists. Please try again.'
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user_found = records.find_one({"email": email})
+        if user_found:
+            message = 'There already is a user with that name'
         else:
-            new_user = {'email': email, 'password': password}
-            users_collection.insert_one(new_user)
+            user_input = {'email': email, 'password': generate_password_hash(password)}
+            records.insert_one(user_input)
             return render_template('loggedin.html')
+    return render_template('signup.html', message=message)
 
-    return render_template('signup.html', error=error)
-
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
-    error = None
-    users_collection = db['users']
-
+    message = ''
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        
-        users_collection = users_collection.find_one({'email': email})
-        if users_collection is None:
-            error = 'Invalid email. Please try again.'
-        elif users_collection['password'] != password:
-            error = 'Invalid password. Please try again.'
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user_found = records.find_one({"email": email})
+        if user_found:
+            if check_password_hash(user_found['password'], password):
+                return render_template('loggedin.html')
+            else:
+                message = 'Wrong password'
         else:
-            return render_template('loggedin.html')
-
-    return render_template('login.html', error=error)
+            message = 'Username not found'
+    return render_template('login.html', message=message)
 
 def combine_collections():
     cust_collection = db['customer']
