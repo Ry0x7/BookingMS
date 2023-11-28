@@ -25,6 +25,18 @@ def booking():
 def about():
     return render_template('about.html')
 
+@app.route("/user/home")
+def logged():
+    return render_template('loggedin.html')
+
+@app.route("/user/about")
+def alogged():
+    return render_template('aboutlogged.html')
+
+@app.route("/admin/home")
+def admin():
+    return render_template('admin.html')
+
 @app.route("/forms/conference")
 def conf():
     return render_template('/forms/conferenceforms.html')
@@ -63,16 +75,59 @@ def report():
         mdata=mdata,
         mlabels=mlabels
     )
+    
+@app.route('/signup', methods=['GET', 'POST'])    
+def signup():
+    error = None
+    users_collection = db['users']
+
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        existing_user = users_collection.find_one({'email': email})
+        if existing_user is not None:
+            error = 'Email already exists. Please try again.'
+        else:
+            new_user = {'email': email, 'password': password}
+            users_collection.insert_one(new_user)
+            return render_template('loggedin.html')
+
+    return render_template('signup.html', error=error)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
+    users_collection = db['users']
+
     if request.method == 'POST':
-        if request.form['email'] != 'admin@gmail.com' or request.form['password'] != 'admin123':
-            error = 'Invalid Credentials. Please try again.'
+        email = request.form['email']
+        password = request.form['password']
+
+        user = Users(email, password)
+        
+        user = users_collection.find_one({'email': email})
+        if user is None:
+            error = 'Invalid email. Please try again.'
+        elif user['password'] != password:
+            error = 'Invalid password. Please try again.'
         else:
             return render_template('loggedin.html')
+
     return render_template('login.html', error=error)
+
+class Users:
+    def __init__(self, email, password):
+        self.booking_id = str(uuid.uuid4())
+        self.email = email
+        self.password = password
+        
+    def to_dict(self):
+        return {
+            '_id': ObjectId(),
+            'email': self.email,
+            'password': self.password
+        }    
 
 class Booking:
     def __init__(self, org_name, startdate, enddate, starttime, endtime, venue, purpose, description):
@@ -176,6 +231,14 @@ def check_time_conflicts():
     }
 
     return jsonify(response)
+
+collection = db['reservation']
+
+data = collection.find()
+
+@app.route('/booked')
+def booked():
+    return render_template('booked.html', data=data)
 
 if __name__ == "__main__":
     app.run(debug=True)
