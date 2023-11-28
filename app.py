@@ -205,9 +205,13 @@ def signup():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        
+        
         user_found = records.find_one({"email": email})
         if user_found:
-            message = 'There already is a user with that name'
+            message = 'There already is a user with that email'  
+        elif not email or not password:
+            message = 'Please provide both email and password' 
         else:
             user_input = {'email': email, 'password': generate_password_hash(password)}
             records.insert_one(user_input)
