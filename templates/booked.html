@@ -1,87 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="/static/s.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <title>Login</title>
-    <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-    crossorigin="anonymous"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="/static/css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <title>Booked</title>
+  <script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+  crossorigin="anonymous"></script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-        <div class="container">
-            <a href="#" class="navbar-brand ">RFR Intersystem Co.</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu"><span class="navbar-toggler-icon"></span></button>
-            
-            <div class="collapse navbar-collapse" id="navmenu">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a href="{{url_for('home')}}" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{url_for('booking')}}" class="nav-link">Book Now</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{url_for('about')}}" class="nav-link">About Us</a>
-                    </li>  
-                    
-                </ul>
-            </div>
-        </div>
-    </nav>
-
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
     <div class="container">
-        <h1>Data from MongoDB</h1>
-    
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col">Field1</th>
-              <th scope="col">Field2</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for doc in data %}
-            <tr>
-              <td>{{ doc['field1'] }}</td>
-              <td>{{ doc['field2'] }}</td>
-              <td>
-                <button class="btn btn-primary btn-sm" data-id="{{ doc['_id'] }}">Update</button>
-                <button class="btn btn-danger btn-sm" data-id="{{ doc['_id'] }}">Delete</button>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <a href="#" class="navbar-brand ">RFR Intersystem Co.</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu"><span class="navbar-toggler-icon"></span></button>
+      
+      <div class="collapse navbar-collapse" id="navmenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a href="{{url_for('logged')}}" class="nav-link">Home</a>
+          </li>
+
+          <li class="nav-item">
+            <a href="{{url_for('alogged')}}" class="nav-link">About Us</a>
+          </li>  
+          <li class="nav-item">
+            <a href="{{url_for('home')}}" class="nav-link">Sign Out</a>
+          </li> 
+        </ul>
       </div>
+    </div>
+  </nav>
 
-      <script>
-        const updateButtons = document.querySelectorAll('.btn-primary');
-        const deleteButtons = document.querySelectorAll('.btn-danger');
-    
-        // Handle update button clicks
-        updateButtons.forEach(button => {
-          button.addEventListener('click', (event) => {
-            const docId = event.target.dataset.id;
-            // Implement update functionality using docId
-            console.log(`Update document with ID: ${docId}`);
-          });
-        });
-    
-        // Handle delete button clicks
-        deleteButtons.forEach(button => {
-          button.addEventListener('click', (event) => {
-            const docId = event.target.dataset.id;
-            // Implement delete functionality using docId
-            console.log(`Delete document with ID: ${docId}`);
-          });
-        });
-      </script>
+  <div class="container">
+    <h1>Data from MongoDB</h1>
 
+    <table class="table table-striped">
+      <caption>Reservation Details</caption>
+      <thead>
+      <tr>
+        <th>Booking ID</th>
+        <th>Organization Name</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Venue</th>
+        <th>Purpose</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% if data %}
+        {% for item in data %}
+        <tr>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.booking_id }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.org_name }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.startdate }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.enddate }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.starttime }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.endtime }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.venue }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.purpose }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.description }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="text" value="{{ item.status }}" class="form-control" />
+            </div>
+          </td>
+          <td>
+            <input type="hidden" value="{{ item.booking_id }}">
+            <button class="btn btn-primary btn-sm update-btn" data-booking-id="{{ item.booking_id }}">Update</button>
+            <button class="btn btn-danger btn-sm delete-btn" data-booking-id="{{ item.booking_id }}">Delete</button>
+          </td>
+          {% endfor %}
+        {% else %}
+        <tr>
+          <td colspan="10">No data available</td>
+        </tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+  <script>
+    let updateButtons = document.querySelectorAll('.update-btn');
+    updateButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        let row = button.parentElement.parentElement;
+        let booking_id = row.children[0].children[0].value;
+        let org_name = row.children[1].children[0].value;
+        let startdate = row.children[2].children[0].value;
+        let enddate = row.children[3].children[0].value;
+        let starttime = row.children[4].children[0].value;
+        let endtime = row.children[5].children[0].value;
+        let venue = row.children[6].children[0].value;
+        let purpose = row.children[7].children[0].value;
+        let description = row.children[8].children[0].value;
+        let status = row.children[9].children[0].value; // Add this line to get the status value
+        let newData = {
+          booking_id,
+          org_name,
+          startdate,
+          enddate,
+          starttime,
+          endtime,
+          venue,
+          purpose,
+          description,
+          status // Add this line to include the status in the newData object
+        };
+        fetch('/updateBooking', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newData),
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      });
+    });
+    let deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        let row = button.parentElement.parentElement;
+        let booking_id = row.children[0].children[0].value;
+        fetch('/deleteBooking/' + booking_id, {
+          method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+          row.remove();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      });
+    });
+  </script>
 </body>
 </html>
