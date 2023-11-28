@@ -17,17 +17,17 @@
             <div class="collapse navbar-collapse" id="navmenu">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a href="{{url_for('home')}}" class="nav-link">Home</a>
+                        <a href="{{url_for('logged')}}" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
                         <a href="{{url_for('booking')}}" class="nav-link">Book Now</a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{url_for('about')}}" class="nav-link">About Us</a>
+                        <a href="{{url_for('alogged')}}" class="nav-link">About Us</a>
                     </li>  
                     
                     <li class="nav-item">
-                        <a href="{{url_for('login')}}" class="nav-link">Login</a>
+                        <a href="{{url_for('home')}}" class="nav-link">Sign Out</a>
                     </li> 
                 </ul>
             </div>
@@ -93,6 +93,7 @@
                                     <option value="onlinepay">Online</option>
                                 </select>
                             </div>
+                            
                             <hr>
                             <div class="elem-group form-group card-text">
                                 <label for="purpose">Purpose</label>
