@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="/static/s.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <title>Login</title>
+    <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+    crossorigin="anonymous"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
@@ -46,11 +50,38 @@
             <tr>
               <td>{{ doc['field1'] }}</td>
               <td>{{ doc['field2'] }}</td>
+              <td>
+                <button class="btn btn-primary btn-sm" data-id="{{ doc['_id'] }}">Update</button>
+                <button class="btn btn-danger btn-sm" data-id="{{ doc['_id'] }}">Delete</button>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
+
+      <script>
+        const updateButtons = document.querySelectorAll('.btn-primary');
+        const deleteButtons = document.querySelectorAll('.btn-danger');
     
+        // Handle update button clicks
+        updateButtons.forEach(button => {
+          button.addEventListener('click', (event) => {
+            const docId = event.target.dataset.id;
+            // Implement update functionality using docId
+            console.log(`Update document with ID: ${docId}`);
+          });
+        });
+    
+        // Handle delete button clicks
+        deleteButtons.forEach(button => {
+          button.addEventListener('click', (event) => {
+            const docId = event.target.dataset.id;
+            // Implement delete functionality using docId
+            console.log(`Delete document with ID: ${docId}`);
+          });
+        });
+      </script>
+
 </body>
 </html>
